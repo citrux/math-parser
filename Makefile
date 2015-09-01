@@ -1,2 +1,2 @@
 all:
-	dmd main.d lexer.d
+	dmd main.d lexer.d container.d

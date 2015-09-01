@@ -4,6 +4,8 @@ enum tokenType {
     ERROR,
     NUMBER,
     OPERATOR,
+    OPEN_PAR,
+    CLOSE_PAR,
     ID
 };
 
@@ -13,7 +15,7 @@ struct token {
 };
 
 struct tokenRange {
-    auto scanner = ctRegex!(`(\s+)|(\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(.)`);
+    auto scanner = ctRegex!(`(\s+)|(\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
     
     // что за фигня с этими типами?
     RegexMatch!(string, BacktrackingMatcher!(true)) matchRange;
@@ -41,6 +43,12 @@ struct tokenRange {
         if (m[4].length)
             tokType = tokenType.ID;
         
+        if (m[5].length)
+            tokType = tokenType.OPEN_PAR;
+        
+        if (m[6].length)
+            tokType = tokenType.CLOSE_PAR;
+
         return token(tokType, m[0]);
     }
 
