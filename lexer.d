@@ -10,7 +10,7 @@ enum tokenType {
 };
 
 struct token {
-    tokenType t;
+    tokenType type;
     string value;
 };
 
