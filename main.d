@@ -1,4 +1,6 @@
 import std.stdio;
+import std.math;
+import std.conv;
 import lexer;
 import container;
 
@@ -93,9 +95,50 @@ string treeToExpression(BinaryTree!token * tree) {
     return result;
 }
 
+void simplifyTree(BinaryTree!token * tree) {
+    if (tree.left != null)
+        simplifyTree(tree.left);
+    if (tree.right != null)
+        simplifyTree(tree.right);
+    if (tree.left != null &&
+        tree.right != null &&
+        tree.left.value.type == tokenType.NUMBER &&
+        tree.right.value.type == tokenType.NUMBER) {
+
+        tree.value.type = tokenType.NUMBER;
+        switch(tree.value.value) {
+            case "+":
+                tree.value.value = to!string(to!int(tree.left.value.value) +
+                                             to!int(tree.right.value.value));
+                break;
+            case "-":
+                tree.value.value = to!string(to!int(tree.left.value.value) -
+                                             to!int(tree.right.value.value));
+                break;
+            case "*":
+                tree.value.value = to!string(to!int(tree.left.value.value) *
+                                             to!int(tree.right.value.value));
+                break;
+            case "/":
+                tree.value.value = to!string(to!int(tree.left.value.value) /
+                                             to!int(tree.right.value.value));
+                break;
+            case "^":
+                tree.value.value = to!string(pow(to!int(tree.left.value.value),
+                                             to!int(tree.right.value.value)));
+                break;
+            default: break;
+        }
+        tree.left = null;
+        tree.right = null;
+    }
+}
+
+
 void main() {
     writeln("Введите выражение:");
     auto expression = readln()[0 .. $-1]; // хак, чтобы не читать символ переноса строки
     auto tree = expressionToTree(expression);
+    simplifyTree(tree);
     writeln(treeToExpression(tree));
 }

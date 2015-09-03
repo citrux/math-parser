@@ -16,7 +16,7 @@ struct token {
 
 struct tokenRange {
     auto scanner = ctRegex!(`(\s+)|(\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
-    
+
     // что за фигня с этими типами?
     RegexMatch!(string, BacktrackingMatcher!(true)) matchRange;
 
@@ -33,19 +33,19 @@ struct tokenRange {
             matchRange.popFront();
             m = matchRange.front();
         }
-        
+
         if (m[2].length)
             tokType = tokenType.NUMBER;
 
         if (m[3].length)
             tokType = tokenType.OPERATOR;
-        
+
         if (m[4].length)
             tokType = tokenType.ID;
-        
+
         if (m[5].length)
             tokType = tokenType.OPEN_PAR;
-        
+
         if (m[6].length)
             tokType = tokenType.CLOSE_PAR;
 
