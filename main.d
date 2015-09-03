@@ -2,7 +2,7 @@ import std.stdio;
 import lexer;
 import container;
 
-void expressionToTree(string expression) {
+BinaryTree!token * expressionToTree(string expression) {
     bool left_associative[string];
     int priority[string];
 
@@ -17,7 +17,7 @@ void expressionToTree(string expression) {
     priority["^"] = 3;
     left_associative["^"] = false;
 
-    Queue!token output;
+    Stack!token output;
     Stack!token holder;
     auto tokens = tokenRange(expression);
     while (!tokens.empty) {
@@ -61,18 +61,41 @@ void expressionToTree(string expression) {
         output.push(holder.top);
         holder.pop();
     }
-    // осталось построить дерево -- развернуть очередь и строить его сверху
-    // вниз
 
-    // для проверки работоспособности
+    auto tree = new BinaryTree!token(output.top);
+    output.pop();
     while(!output.empty) {
-        write(output.front.value, " ");
+        if (tree.right == null) {
+            tree.right = new BinaryTree!token(output.top, tree);
+            if (output.top.type == tokenType.OPERATOR)
+                tree = tree.right;
+        }
+        else {
+            while (tree.left != null)
+                tree = tree.parent;
+            tree.left = new BinaryTree!token(output.top, tree);
+            if (output.top.type == tokenType.OPERATOR)
+                tree = tree.left;
+        }
         output.pop();
     }
+    while (tree.parent != null)
+        tree = tree.parent;
+    return tree;
+}
+
+string treeToExpression(BinaryTree!token * tree) {
+    string result = "";
+    if (tree != null) {
+        result = treeToExpression(tree.left) ~ tree.value.value ~
+            treeToExpression(tree.right);
+    }
+    return result;
 }
 
 void main() {
     writeln("Введите выражение:");
     auto expression = readln()[0 .. $-1]; // хак, чтобы не читать символ переноса строки
-    expressionToTree(expression);
+    auto tree = expressionToTree(expression);
+    writeln(treeToExpression(tree));
 }

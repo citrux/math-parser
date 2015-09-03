@@ -47,8 +47,15 @@ struct Queue(T) {
             backElement.next = tmp;
 
         backElement = tmp;
-        
+
         if (empty)
             frontElement = backElement;
     }
+}
+
+struct BinaryTree(T) {
+    T value;
+    BinaryTree!T * parent;
+    BinaryTree!T * left;
+    BinaryTree!T * right;
 }
