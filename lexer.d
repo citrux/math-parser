@@ -1,4 +1,5 @@
 import std.regex, std.regex.internal.backtracking;
+import std.conv;
 
 enum tokenType {
     ERROR,
@@ -11,14 +12,28 @@ enum tokenType {
 
 struct token {
     tokenType type;
-    string value;
+    uint id;
 };
 
+string[] tableOperators = ["+", "-", "*", "/", "^"];
+double[] tableNumbers;
+string[] tableIds;
+
+uint addToTable(T)(ref T[] table, T value) {
+    foreach(uint i, T el; table)
+        if (el == value)
+            return i;
+
+    table ~= [value];
+    return cast(uint)table.length - 1;
+}
+
 struct tokenRange {
-    auto scanner = ctRegex!(`(\s+)|(\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
+    auto scanner = ctRegex!(`(\s+)|(\d+\.\d+|\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
 
     // что за фигня с этими типами?
     RegexMatch!(string, BacktrackingMatcher!(true)) matchRange;
+
 
     this(string expression) {
         matchRange = matchAll(expression, scanner);
@@ -27,6 +42,7 @@ struct tokenRange {
     @property token front() {
         auto m = matchRange.front();
         auto tokType = tokenType.ERROR;
+        uint id;
 
         // говнокооооооддддд))))
         if (m[1].length) {
@@ -34,14 +50,20 @@ struct tokenRange {
             m = matchRange.front();
         }
 
-        if (m[2].length)
+        if (m[2].length) {
             tokType = tokenType.NUMBER;
+            id = addToTable(tableNumbers, to!double(m[0]));
+        }
 
-        if (m[3].length)
+        if (m[3].length) {
             tokType = tokenType.OPERATOR;
+            id = addToTable(tableOperators, m[0]);
+        }
 
-        if (m[4].length)
+        if (m[4].length) {
             tokType = tokenType.ID;
+            id = addToTable(tableIds, m[0]);
+        }
 
         if (m[5].length)
             tokType = tokenType.OPEN_PAR;
@@ -49,7 +71,7 @@ struct tokenRange {
         if (m[6].length)
             tokType = tokenType.CLOSE_PAR;
 
-        return token(tokType, m[0]);
+        return token(tokType, id);
     }
 
     void popFront () {

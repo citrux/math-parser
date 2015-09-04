@@ -5,32 +5,21 @@ import lexer;
 import container;
 
 BinaryTree!token * expressionToTree(string expression) {
-    bool left_associative[string];
-    int priority[string];
-
-    priority["+"] = 1;
-    left_associative["+"] = true;
-    priority["-"] = 1;
-    left_associative["-"] = true;
-    priority["*"] = 2;
-    left_associative["*"] = true;
-    priority["/"] = 2;
-    left_associative["/"] = true;
-    priority["^"] = 3;
-    left_associative["^"] = false;
+    uint priorities[] = [1, 1, 2, 2, 3];
+    bool left_associative[] = [1, 1, 1, 1, 0];
 
     Stack!token output;
     Stack!token holder;
     auto tokens = tokenRange(expression);
     while (!tokens.empty) {
-
-        switch(tokens.front.type) {
+        auto curr = tokens.front;
+        switch(curr.type) {
             case tokenType.NUMBER:
             case tokenType.ID:
-                output.push(tokens.front);
+                output.push(curr);
                 break;
             case tokenType.OPEN_PAR:
-                holder.push(tokens.front);
+                holder.push(curr);
                 break;
             case tokenType.CLOSE_PAR:
                 while (holder.top.type != tokenType.OPEN_PAR) {
@@ -41,17 +30,17 @@ BinaryTree!token * expressionToTree(string expression) {
                 break;
             case tokenType.OPERATOR:
                 if (!holder.empty && holder.top.type == tokenType.OPERATOR) {
-                    if (left_associative[tokens.front.value] &&
-                            priority[tokens.front.value] <=
-                            priority[holder.top.value] ||
-                            !left_associative[tokens.front.value] &&
-                            priority[tokens.front.value] <
-                            priority[holder.top.value]) {
+                    if (left_associative[curr.id] &&
+                            priorities[curr.id] <=
+                            priorities[holder.top.id] ||
+                            !left_associative[curr.id] &&
+                            priorities[curr.id] <
+                            priorities[holder.top.id]) {
                         output.push(holder.top);
                         holder.pop();
                     }
                 }
-                holder.push(tokens.front);
+                holder.push(curr);
                 break;
             default:
                 break;
@@ -89,8 +78,19 @@ BinaryTree!token * expressionToTree(string expression) {
 string treeToExpression(BinaryTree!token * tree) {
     string result = "";
     if (tree != null) {
-        result = treeToExpression(tree.left) ~ tree.value.value ~
-            treeToExpression(tree.right);
+
+        if (tree.value.type == tokenType.NUMBER)
+            result = treeToExpression(tree.left) ~
+                     to!string(tableNumbers[tree.value.id]) ~
+                     treeToExpression(tree.right);
+        else if (tree.value.type == tokenType.ID)
+            result = treeToExpression(tree.left) ~
+                     tableIds[tree.value.id] ~
+                     treeToExpression(tree.right);
+        else
+            result = treeToExpression(tree.left) ~
+                     tableOperators[tree.value.id] ~
+                     treeToExpression(tree.right);
     }
     return result;
 }
@@ -106,26 +106,31 @@ void simplifyTree(BinaryTree!token * tree) {
         tree.right.value.type == tokenType.NUMBER) {
 
         tree.value.type = tokenType.NUMBER;
-        switch(tree.value.value) {
-            case "+":
-                tree.value.value = to!string(to!int(tree.left.value.value) +
-                                             to!int(tree.right.value.value));
+        switch(tree.value.id) {
+            case 0:
+                tree.value.id = addToTable(tableNumbers,
+                                           tableNumbers[tree.left.value.id] +
+                                           tableNumbers[tree.right.value.id]);
                 break;
-            case "-":
-                tree.value.value = to!string(to!int(tree.left.value.value) -
-                                             to!int(tree.right.value.value));
+            case 1:
+                tree.value.id = addToTable(tableNumbers,
+                                           tableNumbers[tree.left.value.id] -
+                                           tableNumbers[tree.right.value.id]);
                 break;
-            case "*":
-                tree.value.value = to!string(to!int(tree.left.value.value) *
-                                             to!int(tree.right.value.value));
+            case 2:
+                tree.value.id = addToTable(tableNumbers,
+                                           tableNumbers[tree.left.value.id] *
+                                           tableNumbers[tree.right.value.id]);
                 break;
-            case "/":
-                tree.value.value = to!string(to!int(tree.left.value.value) /
-                                             to!int(tree.right.value.value));
+            case 3:
+                tree.value.id = addToTable(tableNumbers,
+                                           tableNumbers[tree.left.value.id] /
+                                           tableNumbers[tree.right.value.id]);
                 break;
-            case "^":
-                tree.value.value = to!string(pow(to!int(tree.left.value.value),
-                                             to!int(tree.right.value.value)));
+            case 4:
+                tree.value.id = addToTable(tableNumbers,
+                                           pow(tableNumbers[tree.left.value.id],
+                                           tableNumbers[tree.right.value.id]));
                 break;
             default: break;
         }
