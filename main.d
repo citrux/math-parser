@@ -139,11 +139,12 @@ void simplifyTree(BinaryTree!token * tree) {
     }
 }
 
-
 void main() {
     writeln("Введите выражение:");
     auto expression = readln()[0 .. $-1]; // хак, чтобы не читать символ переноса строки
     auto tree = expressionToTree(expression);
+    auto tree1 = tree.dup;
     simplifyTree(tree);
     writeln(treeToExpression(tree));
+    writeln(treeToExpression(tree1));
 }

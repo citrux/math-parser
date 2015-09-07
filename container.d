@@ -58,4 +58,11 @@ struct BinaryTree(T) {
     BinaryTree!T * parent;
     BinaryTree!T * left;
     BinaryTree!T * right;
+
+    BinaryTree!T * dup(BinaryTree!T * newParent = null) {
+        auto newTree = new BinaryTree!T(value, newParent);
+        if (left  != null) newTree.left  = left.dup(newTree);
+        if (right != null) newTree.right = right.dup(newTree);
+        return newTree;
+    }
 }
