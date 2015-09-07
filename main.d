@@ -5,9 +5,6 @@ import lexer;
 import container;
 
 BinaryTree!token * expressionToTree(string expression) {
-    uint priorities[] = [1, 1, 2, 2, 3];
-    bool left_associative[] = [1, 1, 1, 1, 0];
-
     Stack!token output;
     Stack!token holder;
     auto tokens = tokenRange(expression);
@@ -87,10 +84,14 @@ string treeToExpression(BinaryTree!token * tree) {
             result = treeToExpression(tree.left) ~
                      tableIds[tree.value.id] ~
                      treeToExpression(tree.right);
-        else
+        else {
             result = treeToExpression(tree.left) ~
                      tableOperators[tree.value.id] ~
                      treeToExpression(tree.right);
+            if (tree.parent != null && tree.parent.value.type == tokenType.OPERATOR &&
+                priorities[tree.parent.value.id] > priorities[tree.value.id])
+                result = "(" ~ result ~ ")"; 
+        }
     }
     return result;
 }

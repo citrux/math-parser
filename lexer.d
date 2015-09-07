@@ -19,6 +19,10 @@ string[] tableOperators = ["+", "-", "*", "/", "^"];
 double[] tableNumbers;
 string[] tableIds;
 
+uint priorities[] = [1, 1, 2, 2, 3];
+bool left_associative[] = [1, 1, 1, 1, 0];
+
+
 uint addToTable(T)(ref T[] table, T value) {
     foreach(uint i, T el; table)
         if (el == value)
