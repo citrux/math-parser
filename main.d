@@ -24,6 +24,10 @@ BinaryTree!token * expressionToTree(string expression) {
                     holder.pop();
                 }
                 holder.pop();
+                if (holder.top.type == tokenType.FUNCTION) {
+                    output.push(holder.top);
+                    holder.pop();
+                }
                 break;
             case tokenType.OPERATOR:
                 if (!holder.empty && holder.top.type == tokenType.OPERATOR) {
@@ -39,6 +43,8 @@ BinaryTree!token * expressionToTree(string expression) {
                 }
                 holder.push(curr);
                 break;
+            case tokenType.FUNCTION:
+                holder.push(curr);
             default:
                 break;
         }
@@ -53,16 +59,18 @@ BinaryTree!token * expressionToTree(string expression) {
     auto tree = new BinaryTree!token(output.top);
     output.pop();
     while(!output.empty) {
-        if (tree.right == null) {
+        if (tree.value.type == tokenType.OPERATOR && tree.right == null) {
             tree.right = new BinaryTree!token(output.top, tree);
-            if (output.top.type == tokenType.OPERATOR)
+            if (output.top.type == tokenType.OPERATOR ||
+                output.top.type == tokenType.FUNCTION)
                 tree = tree.right;
         }
         else {
             while (tree.left != null)
                 tree = tree.parent;
             tree.left = new BinaryTree!token(output.top, tree);
-            if (output.top.type == tokenType.OPERATOR)
+            if (output.top.type == tokenType.OPERATOR ||
+                output.top.type == tokenType.FUNCTION)
                 tree = tree.left;
         }
         output.pop();
@@ -75,22 +83,32 @@ BinaryTree!token * expressionToTree(string expression) {
 string treeToExpression(BinaryTree!token * tree) {
     string result = "";
     if (tree != null) {
-
-        if (tree.value.type == tokenType.NUMBER)
-            result = treeToExpression(tree.left) ~
-                     to!string(tableNumbers[tree.value.id]) ~
-                     treeToExpression(tree.right);
-        else if (tree.value.type == tokenType.ID)
-            result = treeToExpression(tree.left) ~
-                     tableIds[tree.value.id] ~
-                     treeToExpression(tree.right);
-        else {
-            result = treeToExpression(tree.left) ~
-                     tableOperators[tree.value.id] ~
-                     treeToExpression(tree.right);
-            if (tree.parent != null && tree.parent.value.type == tokenType.OPERATOR &&
-                priorities[tree.parent.value.id] > priorities[tree.value.id])
-                result = "(" ~ result ~ ")"; 
+        switch(tree.value.type) {
+            case tokenType.NUMBER:
+                result = treeToExpression(tree.left) ~
+                         to!string(tableNumbers[tree.value.id]) ~
+                         treeToExpression(tree.right);
+                break;
+            case tokenType.ID:
+                result = treeToExpression(tree.left) ~
+                         tableIds[tree.value.id] ~
+                         treeToExpression(tree.right);
+                break;
+            case tokenType.OPERATOR:
+                result = treeToExpression(tree.left) ~
+                         tableOperators[tree.value.id] ~
+                         treeToExpression(tree.right);
+                if (tree.parent != null &&
+                    tree.parent.value.type == tokenType.OPERATOR &&
+                    priorities[tree.parent.value.id] > priorities[tree.value.id])
+                    result = "(" ~ result ~ ")";
+                break;
+            case tokenType.FUNCTION:
+                result = tableFunctions[tree.value.id] ~
+                    "(" ~ treeToExpression(tree.left) ~ ")";
+                break;
+            default:
+                break;
         }
     }
     return result;
