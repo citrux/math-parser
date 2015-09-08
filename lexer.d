@@ -1,10 +1,11 @@
-import std.regex, std.regex.internal.backtracking;
+import std.regex;
 import std.conv;
 
 enum tokenType {
     ERROR,
     NUMBER,
     OPERATOR,
+    FUNCTION,
     OPEN_PAR,
     CLOSE_PAR,
     ID
@@ -16,6 +17,7 @@ struct token {
 };
 
 string[] tableOperators = ["+", "-", "*", "/", "^"];
+string[] tableFunctions = ["sin", "cos", "exp", "ln"];
 double[] tableNumbers;
 string[] tableIds;
 
@@ -33,10 +35,10 @@ uint addToTable(T)(ref T[] table, T value) {
 }
 
 struct tokenRange {
-    auto scanner = ctRegex!(`(\s+)|(\d+\.\d+|\d+)|([-*+/^])|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
+    auto scanner = ctRegex!(`(\s+)|(\d+\.\d+|\d+)|([-*+/^])|(sin|cos|exp|ln)|([A-Za-z_][A-Za-z0-9_]*)|(\()|(\))|(.)`);
 
     // что за фигня с этими типами?
-    RegexMatch!(string, BacktrackingMatcher!(true)) matchRange;
+    typeof(matchAll("", scanner)) matchRange;
 
 
     this(string expression) {
@@ -65,14 +67,19 @@ struct tokenRange {
         }
 
         if (m[4].length) {
+            tokType = tokenType.FUNCTION;
+            id = addToTable(tableFunctions, m[0]);
+        }
+
+        if (m[5].length) {
             tokType = tokenType.ID;
             id = addToTable(tableIds, m[0]);
         }
 
-        if (m[5].length)
+        if (m[6].length)
             tokType = tokenType.OPEN_PAR;
 
-        if (m[6].length)
+        if (m[7].length)
             tokType = tokenType.CLOSE_PAR;
 
         return token(tokType, id);
