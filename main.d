@@ -215,6 +215,7 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
                     break;
                 default: break;
             }
+            break;
         case tokenType.FUNCTION:
             auto copy = tree.dup(tree);
             tree.value.type = tokenType.OPERATOR;
@@ -247,6 +248,7 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
                     break;
                 default: break;
             }
+            break;
         default: break;
     }
 }
@@ -293,15 +295,72 @@ void simplifyTree(BinaryTree!token * tree) {
         tree.left = null;
         tree.right = null;
     }
+
+    auto zero = token(tokenType.NUMBER, addToTable(tableNumbers, 0));
+    auto one = token(tokenType.NUMBER, addToTable(tableNumbers, 1));
+
+    if (tree.value.type == tokenType.OPERATOR)
+        switch (tree.value.id) {
+            case 0:
+                if (tree.left.value == zero || tree.right.value == zero) {
+                    auto src = (tree.left.value == zero) ?
+                        tree.right: tree.left;
+                    tree.value = src.value;
+                    tree.left = src.left;
+                    tree.right = src.right;
+                }
+                break;
+            case 1:
+                if (tree.right.value == zero) {
+                    tree.value = tree.left.value;
+                    tree.right = tree.left.right;
+                    tree.left = tree.left.left;
+                }
+                break;
+            case 2:
+                if (tree.left.value == zero || tree.right.value == zero) {
+                    tree.value = zero;
+                    tree.left = null;
+                    tree.right = null;
+                }
+                else if (tree.left.value == one || tree.right.value == one) {
+                    auto src = (tree.left.value == one) ?
+                        tree.right: tree.left;
+                    tree.value = src.value;
+                    tree.left = src.left;
+                    tree.right = src.right;
+                }
+                break;
+            case 3:
+                if (tree.right.value == one) {
+                    tree.value = tree.left.value;
+                    tree.right = tree.left.right;
+                    tree.left = tree.left.left;
+                }
+                break;
+            case 4:
+                if (tree.right.value == one ||
+                    tree.left.value == one ||
+                    tree.left.value == zero) {
+                    tree.value = tree.left.value;
+                    tree.right = tree.left.right;
+                    tree.left = tree.left.left;
+                }
+                break;
+
+            default: break;
+        }
 }
 
 void main() {
     writeln("Введите выражение:");
     auto expression = readln()[0 .. $-1]; // хак, чтобы не читать символ переноса строки
-    writeln("Введите переменную, по которой дифференцировать:");
-    auto var = readln()[0 .. $-1];
-    auto varId = addToTable(tableIds, var);
+    auto varId = addToTable(tableIds, "x");
     auto tree = expressionToTree(expression);
-    derivativeTree(tree, varId );
+    derivativeTree(tree, varId);
+    writeln("Производная по x:");
+    writeln(treeToExpression(tree));
+    simplifyTree(tree);
+    writeln("После упрощения:");
     writeln(treeToExpression(tree));
 }
