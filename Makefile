@@ -1,4 +1,4 @@
-SOURCE := main.d lexer.d container.d
+SOURCE := main.d lexer.d container.d ast.d
 OBJS := $(patsubst %.d, %.o, $(SOURCE))
 
 default: gdc
