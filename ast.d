@@ -4,7 +4,9 @@ import std.stdio;
 import lexer;
 import container;
 
-BinaryTree!token * expressionToTree(string expression) {
+alias AST = BinaryTree!token;
+
+AST * expressionToTree(string expression) {
     Stack!token output;
     Stack!token holder;
     auto tokens = tokenRange(expression);
@@ -56,11 +58,13 @@ BinaryTree!token * expressionToTree(string expression) {
         holder.pop();
     }
 
-    auto tree = new BinaryTree!token(output.top);
+    writeln(output);
+
+    auto tree = new AST(output.top);
     output.pop();
     while(!output.empty) {
         if (tree.value.type == tokenType.OPERATOR && tree.right == null) {
-            tree.right = new BinaryTree!token(output.top, tree);
+            tree.right = new AST(output.top, tree);
             if (output.top.type == tokenType.OPERATOR ||
                 output.top.type == tokenType.FUNCTION)
                 tree = tree.right;
@@ -68,7 +72,7 @@ BinaryTree!token * expressionToTree(string expression) {
         else {
             while (tree.left != null)
                 tree = tree.parent;
-            tree.left = new BinaryTree!token(output.top, tree);
+            tree.left = new AST(output.top, tree);
             if (output.top.type == tokenType.OPERATOR ||
                 output.top.type == tokenType.FUNCTION)
                 tree = tree.left;
@@ -80,7 +84,7 @@ BinaryTree!token * expressionToTree(string expression) {
     return tree;
 }
 
-string treeToExpression(BinaryTree!token * tree) {
+string treeToExpression(AST * tree) {
     string result = "";
     if (tree != null) {
         switch(tree.value.type) {
@@ -114,7 +118,7 @@ string treeToExpression(BinaryTree!token * tree) {
     return result;
 }
 
-void derivativeTree(BinaryTree!token * tree, uint varId) {
+void derivativeTree(AST * tree, uint varId) {
     switch(tree.value.type) {
         case tokenType.NUMBER:
             tree.value.id = addToTable(tableNumbers, 0);
@@ -149,12 +153,12 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
                     rdup.value.id = 2;
                     derivativeTree(ldup.left, varId);
                     derivativeTree(rdup.right, varId);
-                    tree.right = new BinaryTree!token(
+                    tree.right = new AST(
                             token(tokenType.OPERATOR, 4), tree, tree.right);
-                    tree.right.right = new BinaryTree!token(
+                    tree.right.right = new AST(
                         token(tokenType.NUMBER, addToTable(tableNumbers, 2)),
                         tree.right);
-                    tree.left = new BinaryTree!token(
+                    tree.left = new AST(
                             token(tokenType.OPERATOR, 1), tree, ldup, rdup);
                     ldup.parent = tree.left;
                     rdup.parent = tree.left;
@@ -169,43 +173,43 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
                     auto r3 = tree.right.dup;
                     auto r4 = tree.right.dup;
                     tree.value.id = 0;
-                    tree.left = new BinaryTree!token(
+                    tree.left = new AST(
                             token(tokenType.OPERATOR, 2), tree);
 
-                    tree.left.left = new BinaryTree!token(
+                    tree.left.left = new AST(
                             token(tokenType.OPERATOR, 4), tree.left);
 
                     tree.left.left.left = l1;
                     l1.parent = tree.left.left;
 
-                    tree.left.left.right = new BinaryTree!token(
+                    tree.left.left.right = new AST(
                             token(tokenType.OPERATOR, 1), tree.left.left);
 
                     tree.left.left.right.left = r1;
                     r1.parent = tree.left.left.right;
 
-                    tree.left.left.right.right = new BinaryTree!token(
+                    tree.left.left.right.right = new AST(
                             token(tokenType.NUMBER, addToTable(tableNumbers,
                                     1)), tree.left.left.right);
 
                     derivativeTree(l2, varId);
-                    tree.left.right = new BinaryTree!token(
+                    tree.left.right = new AST(
                             token(tokenType.OPERATOR, 2), tree.left, l2, r2);
                     l2.parent = tree.left.right;
                     r2.parent = tree.left.right;
 
 
-                    tree.right = new BinaryTree!token(
+                    tree.right = new AST(
                             token(tokenType.OPERATOR, 2), tree);
 
-                    tree.right.left = new BinaryTree!token(
+                    tree.right.left = new AST(
                             token(tokenType.OPERATOR, 4), tree.right, l3, r3);
                     l3.parent = tree.right.left;
                     r3.parent = tree.right.left;
 
-                    tree.right.right = new BinaryTree!token(
+                    tree.right.right = new AST(
                             token(tokenType.OPERATOR, 2), tree.right);
-                    tree.right.right.left = new BinaryTree!token(
+                    tree.right.right.left = new AST(
                             token(tokenType.FUNCTION, 3), tree.right.right, l4);
                     l4.parent = tree.right.right.left;
 
@@ -232,7 +236,7 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
                         tree.left.value.id = 0;
                         auto newcopy = tree.dup;
                         auto minusOne = new
-                            BinaryTree!token(token(tokenType.NUMBER,
+                            AST(token(tokenType.NUMBER,
                                         addToTable(tableNumbers, -1)));
                         tree.value = token(tokenType.OPERATOR, 2);
                         tree.left = minusOne;
@@ -253,7 +257,7 @@ void derivativeTree(BinaryTree!token * tree, uint varId) {
     }
 }
 
-void simplifyTree(BinaryTree!token * tree) {
+void simplifyTree(AST * tree) {
     if (tree.left != null)
         simplifyTree(tree.left);
     if (tree.right != null)

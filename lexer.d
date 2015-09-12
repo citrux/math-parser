@@ -14,6 +14,33 @@ enum tokenType {
 struct token {
     tokenType type;
     uint id;
+
+    void toString(scope void delegate(const(char)[]) sink) const {
+        switch(type) {
+            case tokenType.ERROR:
+                sink("[ERROR]");
+                break;
+            case tokenType.NUMBER:
+                sink(to!string(tableNumbers[id]));
+                break;
+            case tokenType.OPERATOR:
+                sink(tableOperators[id]);
+                break;
+            case tokenType.FUNCTION:
+                sink(tableFunctions[id]);
+                break;
+            case tokenType.OPEN_PAR:
+                sink("(");
+                break;
+            case tokenType.CLOSE_PAR:
+                sink(")");
+                break;
+            case tokenType.ID:
+                sink(tableIds[id]);
+                break;
+            default: break;
+        }
+    }
 };
 
 string[] tableOperators = ["+", "-", "*", "/", "^"];

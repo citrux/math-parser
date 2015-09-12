@@ -1,3 +1,5 @@
+import std.conv;
+
 struct Element(T) {
     T data;
     Element * next;
@@ -20,6 +22,18 @@ struct Stack(T) {
 
     void push (T a) {
         topElement = new Element!T(a, topElement);
+    }
+
+     void toString(scope void delegate(const(char)[]) sink) {
+        sink("[ ");
+        auto el = topElement;
+        while(el.next) {
+            sink(to!string(el.data));
+            sink(", ");
+            el = el.next;
+        }
+        sink(to!string(el.data));
+        sink(" ]");
     }
 }
 
