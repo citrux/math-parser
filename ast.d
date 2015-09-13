@@ -1,6 +1,7 @@
 import std.math;
 import std.conv;
 import std.stdio;
+import std.algorithm;
 import lexer;
 import container;
 
@@ -322,6 +323,8 @@ void simplifyTree(AST * tree) {
                 }
                 break;
             case 2:
+                if (tree.right.value.type == tokenType.NUMBER)
+                    swap(tree.left, tree.right);
                 if (tree.left.value == zero || tree.right.value == zero) {
                     tree.value = zero;
                     tree.left = null;
