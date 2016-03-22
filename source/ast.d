@@ -48,6 +48,7 @@ AST * expressionToTree(string expression) {
                 break;
             case tokenType.FUNCTION:
                 holder.push(curr);
+                break;
             default:
                 break;
         }
