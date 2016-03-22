@@ -1,3 +1,8 @@
+/++
+    Lexer
++/
+module lexer;
+
 import std.regex;
 import std.conv;
 
@@ -48,8 +53,8 @@ string[] tableFunctions = ["sin", "cos", "exp", "ln"];
 double[] tableNumbers;
 string[] tableIds;
 
-uint priorities[] = [1, 1, 2, 2, 3];
-bool left_associative[] = [1, 1, 1, 1, 0];
+uint[] priorities = [1, 1, 2, 2, 3];
+bool[] left_associative = [1, 1, 1, 1, 0];
 
 
 uint addToTable(T)(ref T[] table, T value) {

@@ -1,3 +1,8 @@
+/++
+    Queue and stack
++/
+module container;
+
 import std.conv;
 
 struct Element(T) {
@@ -5,6 +10,7 @@ struct Element(T) {
     Element * next;
 }
 
+/// Stack
 struct Stack(T) {
     Element!T * topElement;
 

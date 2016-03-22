@@ -1,3 +1,8 @@
+/++
+    AST
++/
+module ast;
+
 import std.math;
 import std.conv;
 import std.stdio;
