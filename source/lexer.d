@@ -6,8 +6,6 @@ module lexer;
 import std.regex;
 import std.conv;
 
-import std.stdio;
-
 enum tokenType {
     ERROR,
     NUMBER,
