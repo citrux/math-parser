@@ -1,0 +1,4 @@
+name "math-parser"
+description "A parser of mathematical expressions with symbolic calculations"
+copyright "Copyright © 2016, pinecrew"
+authors "Vova Abdrakhmanov <369565@gmail.com>, Alexey Golubev <dr.freecx@gmail.com>"
