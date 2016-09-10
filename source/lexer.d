@@ -77,6 +77,7 @@ struct tokenRange {
         uint id;
         foreach(m; matchAll(expression, scanner)) {
             // всё ещё говнокод)
+            if (m[1].length) {continue;}
             if (m[2].length) {
                 tokType = tokenType.NUMBER;
                 id = addToTable(tableNumbers, to!double(m[0]));
